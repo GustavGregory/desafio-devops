@@ -1,7 +1,3 @@
-Aqui está o conteúdo de um arquivo `README.md` detalhado, seguindo o desafio solicitado. Ele descreve o código `main.tf`, as melhorias de segurança, a automação do Nginx e as instruções para rodar o projeto.
-
----
-
 # Desafio de Estágio DevOps - Terraform na AWS
 
 ## Descrição do Projeto
