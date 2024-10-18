@@ -1,124 +1,102 @@
-Aqui está o conteúdo de um arquivo `README.md` detalhado, seguindo o desafio solicitado. Ele descreve o código `main.tf`, as melhorias de segurança, a automação do Nginx e as instruções para rodar o projeto.
-
----
-
 # Desafio de Estágio DevOps - Terraform na AWS
 
 ## Descrição do Projeto
 
-Este projeto define a criação de uma infraestrutura básica na AWS utilizando **Terraform**, incluindo:
-- VPC (Virtual Private Cloud)
-- Subnet
-- Security Group (Grupo de Segurança)
-- Key Pair (Par de Chaves)
-- Instância EC2 com automação de configuração do servidor **Nginx**.
+Este projeto utiliza **Terraform** para provisionar uma infraestrutura básica na **AWS**. A infraestrutura inclui a criação de uma **VPC**, **Subnet**, **Internet Gateway**, **Security Group**, **Key Pair** e uma **instância EC2** que, após criada, é configurada para instalar e iniciar o servidor **Nginx** automaticamente.
 
----
+## Infraestrutura Criada
 
-## Arquivo `main.tf`
+### 1. **VPC (Virtual Private Cloud)**
+- **Bloco CIDR**: `10.0.0.0/16`
+- O DNS está habilitado para suporte e resolução de nomes dentro da VPC.
 
-### Infraestrutura Criada
+### 2. **Subnet**
+- **Bloco CIDR**: `10.0.1.0/24`
+- A Subnet está localizada na zona de disponibilidade `us-east-1a`.
 
-1. **VPC (Virtual Private Cloud)**
-   - Uma VPC foi criada com o bloco CIDR `10.0.0.0/16`, fornecendo um ambiente de rede isolado na AWS.
+### 3. **Internet Gateway**
+- Um Internet Gateway foi configurado para fornecer conectividade à Internet para os recursos dentro da VPC.
 
-2. **Subnet**
-   - Criada dentro da VPC com o bloco CIDR `10.0.1.0/24`. Esta Subnet está associada à zona de disponibilidade `us-east-1a`.
+### 4. **Tabela de Rotas**
+- Todo o tráfego (`0.0.0.0/0`) é roteado para o Internet Gateway, permitindo acesso à Internet.
 
-3. **Security Group (Grupo de Segurança)**
-   - Um Security Group foi configurado com as seguintes regras:
-     - Porta **22** (SSH) aberta para todos (`0.0.0.0/0`). *Recomendação*: Melhorar a segurança restringindo o SSH a um IP específico.
-     - Porta **80** (HTTP) aberta para todos (`0.0.0.0/0`), permitindo acesso à instância para servidores web.
-     - Egress (Saída) liberada para todo o tráfego, permitindo que a instância envie qualquer tipo de dado para fora.
+### 5. **Security Group**
+- O Security Group permite:
+  - **SSH (porta 22)** de qualquer lugar (`0.0.0.0/0`) – **Recomendação**: restringir o SSH para um IP específico para melhorar a segurança.
+  - Todo o tráfego de saída.
 
-4. **Key Pair**
-   - Gerada uma Key Pair (par de chaves) chamada `deployer-key`, usada para acessar a instância EC2 via SSH.
+### 6. **Key Pair**
+- Uma chave SSH é gerada dinamicamente e associada à instância EC2 para acesso remoto.
 
-5. **Instância EC2**
-   - Uma instância EC2 do tipo `t2.micro` foi criada usando a AMI `ami-0c55b159cbfafe1f0`. Esta instância está configurada para rodar o servidor **Nginx** automaticamente ao ser criada.
+### 7. **Instância EC2 (Debian 12)**
+- **Tipo de instância**: `t2.micro`
+- **Sistema Operacional**: Debian 12, selecionado através de uma AMI pública.
+- **Armazenamento**: Volume root de 20GB no tipo `gp2`.
+- A instância é configurada para receber um **IP público** e está associada à Subnet e ao Security Group definidos.
+- **Automação**: Um script `user_data` atualiza os pacotes e instala o servidor Nginx automaticamente na criação da instância.
 
----
-
-## Automação e Melhorias
+## Melhorias Implementadas
 
 ### 1. **Automação do Nginx**
-   A instância EC2 está configurada com um script de **user_data** que faz a instalação e iniciação do servidor web **Nginx** automaticamente:
-   ```bash
-   #!/bin/bash
-   sudo apt update
-   sudo apt install -y nginx
-   sudo systemctl start nginx
-   ```
-   Isso garante que, assim que a instância for provisionada, o Nginx estará rodando e acessível através da porta 80.
+A instância EC2 está configurada para instalar e iniciar o **Nginx** automaticamente utilizando o script abaixo:
+```bash
+#!/bin/bash
+apt-get update -y
+apt-get upgrade -y
+apt-get install -y nginx
+systemctl start nginx
+```
 
-### 2. **Melhorias de Segurança**
-   - A configuração de segurança atual abre a porta 22 (SSH) para todos. Uma melhoria recomendada seria restringir o acesso ao SSH apenas para um endereço IP específico:
-     ```hcl
-     cidr_blocks = ["seu_ip/32"]  # Substitua 'seu_ip' pelo seu endereço IP
-     ```
-
-### 3. **Outras Melhorias**
-   - **Modularização**: O código pode ser facilmente modularizado para separar a criação da VPC, Subnet, Security Group e Instância EC2 em arquivos separados, tornando-o mais reutilizável.
-   - **Variáveis**: O uso de variáveis pode ser adicionado para permitir flexibilidade na escolha de valores como região, tipo de instância, etc.
-
----
-
-## Pré-requisitos
-
-- **AWS Account**: Você precisa de uma conta AWS com permissões adequadas para criar recursos como VPC, Subnets, Security Groups, Key Pairs e instâncias EC2.
-- **Terraform**: Instale o Terraform em sua máquina seguindo a documentação oficial [aqui](https://www.terraform.io/downloads).
-
----
+### 2. **Melhoria de Segurança**
+- **SSH Restrito**: Uma melhoria recomendada é restringir o acesso SSH para um IP específico em vez de deixar a porta 22 aberta para o mundo. Isso pode ser feito ajustando o bloco de regras de entrada no Security Group.
 
 ## Instruções para Execução
 
-### 1. **Clonar o Repositório**
-   Clone o repositório do projeto em sua máquina local:
+### Pré-requisitos:
+- **AWS CLI** configurado com as credenciais apropriadas.
+- **Terraform** instalado localmente. Você pode baixar a ferramenta [aqui](https://www.terraform.io/downloads).
+
+### Passos:
+1. **Clone o repositório**:
    ```bash
-   git clone <URL-do-seu-repositório>
-   cd <diretório-do-projeto>
+   git clone <URL-do-repositorio>
+   cd <diretorio-do-repositorio>
    ```
 
-### 2. **Configurar Credenciais da AWS**
-   Certifique-se de que suas credenciais da AWS estejam configuradas corretamente no seu ambiente:
-   ```bash
-   aws configure
-   ```
-
-### 3. **Inicializar o Terraform**
-   No diretório onde está o arquivo `main.tf`, execute o seguinte comando para inicializar o Terraform e baixar os provedores necessários:
+2. **Inicialize o Terraform**:
+   No diretório onde está o arquivo `main.tf`, execute:
    ```bash
    terraform init
    ```
 
-### 4. **Aplicar o Código**
+3. **Aplique o Terraform**:
    Para criar a infraestrutura na AWS, execute:
    ```bash
    terraform apply
    ```
-   Revise as mudanças que o Terraform propõe e digite `yes` para confirmar a criação dos recursos.
+   Confirme a criação dos recursos digitando `yes` quando solicitado.
 
-### 5. **Acessar a Instância**
-   Após a criação, você pode acessar a instância EC2 via SSH usando o Key Pair gerado:
+4. **Acessar a instância EC2**:
+   Após a criação, acesse a instância EC2 via SSH usando a chave privada gerada:
    ```bash
-   ssh -i <caminho-para-sua-chave.pem> ubuntu@<endereço-ip-da-instância>
+   ssh -i <path_to_private_key.pem> ubuntu@<ec2_public_ip>
    ```
-   Para descobrir o endereço IP da instância, você pode usar o comando:
-   ```bash
-   terraform output
+   O endereço IP público da instância será exibido como output ao final do processo.
+
+5. **Testar o Nginx**:
+   Após a criação da instância, acesse o endereço IP público da instância no navegador:
    ```
+   http://<ec2_public_ip>
+   ```
+   O servidor Nginx estará rodando.
 
----
-
-## Considerações Finais
-
-- **Destruir Recursos**: Após o teste, destrua a infraestrutura criada para evitar custos desnecessários na AWS:
+6. **Destruir a infraestrutura**:
+   Após os testes, destrua a infraestrutura para evitar custos:
    ```bash
    terraform destroy
    ```
 
-- **Documentação**: Consulte a documentação oficial do Terraform para aprender mais sobre suas funcionalidades [aqui](https://www.terraform.io/docs).
+## Outputs
 
----
-
-Espero que este arquivo atenda aos requisitos do desafio! Caso tenha alguma dúvida, é só me avisar. Boa sorte com o envio!
+- **Chave privada**: A chave privada SSH será exibida no output.
+- **IP público**: O IP público da instância EC2 também será exibido.
