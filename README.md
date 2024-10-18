@@ -98,11 +98,5 @@ systemctl start nginx
 
 ## Outputs
 
-<<<<<<< HEAD
 - **Chave privada**: A chave privada SSH será exibida no output.
 - **IP público**: O IP público da instância EC2 também será exibido.
-=======
----
-
-Espero que este arquivo atenda aos requisitos do desafio! Caso tenha alguma dúvida, é só me avisar. Boa sorte com o envio!
->>>>>>> b219645947413f3694d5acd96ec1c527799d437d
