@@ -1,7 +1,3 @@
-Aqui está a versão revisada do seu README.md, em primeira pessoa e com as melhorias aplicadas:
-
----
-
 # Desafio de Estágio DevOps - Terraform na AWS
 
 ## Descrição do Projeto
