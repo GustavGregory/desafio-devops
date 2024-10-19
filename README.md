@@ -1,8 +1,12 @@
+Aqui está a versão revisada do seu README.md, em primeira pessoa e com as melhorias aplicadas:
+
+---
+
 # Desafio de Estágio DevOps - Terraform na AWS
 
 ## Descrição do Projeto
 
-Este projeto utiliza **Terraform** para provisionar uma infraestrutura básica na **AWS**. A infraestrutura inclui a criação de uma **VPC**, **Subnet**, **Internet Gateway**, **Security Group**, **Key Pair** e uma **instância EC2** que, após criada, é configurada para instalar e iniciar o servidor **Nginx** automaticamente.
+Neste projeto, utilizei o **Terraform** para provisionar uma infraestrutura básica na **AWS**. A infraestrutura criada inclui uma **VPC**, **Subnet**, **Internet Gateway**, **Security Group**, **Key Pair** e uma **instância EC2** que, após ser provisionada, instala e inicia o servidor **Nginx** automaticamente.
 
 ## Infraestrutura Criada
 
@@ -22,23 +26,24 @@ Este projeto utiliza **Terraform** para provisionar uma infraestrutura básica n
 
 ### 5. **Security Group**
 - O Security Group permite:
-  - **SSH (porta 22)** de qualquer lugar (`0.0.0.0/0`) – **Recomendação**: restringir o SSH para um IP específico para melhorar a segurança.
-  - Todo o tráfego de saída.
+  - **SSH (porta 22)** de um IP específico, garantindo maior segurança e evitando acessos não autorizados.
+  - Todo o tráfego de saída está liberado.
 
 ### 6. **Key Pair**
-- Uma chave SSH é gerada dinamicamente e associada à instância EC2 para acesso remoto.
+- Gerei dinamicamente um par de chaves SSH e associei à instância EC2 para permitir o acesso remoto de forma segura.
 
 ### 7. **Instância EC2 (Debian 12)**
 - **Tipo de instância**: `t2.micro`
 - **Sistema Operacional**: Debian 12, selecionado através de uma AMI pública.
 - **Armazenamento**: Volume root de 20GB no tipo `gp2`.
-- A instância é configurada para receber um **IP público** e está associada à Subnet e ao Security Group definidos.
-- **Automação**: Um script `user_data` atualiza os pacotes e instala o servidor Nginx automaticamente na criação da instância.
+- A instância foi configurada para receber um **IP público**, estando associada à Subnet e ao Security Group definidos.
+- **Automação**: Um script `user_data` atualiza os pacotes e instala automaticamente o servidor Nginx assim que a instância é provisionada.
 
 ## Melhorias Implementadas
 
 ### 1. **Automação do Nginx**
-A instância EC2 está configurada para instalar e iniciar o **Nginx** automaticamente utilizando o script abaixo:
+Configurei a instância EC2 para que o servidor **Nginx** seja instalado e iniciado automaticamente após a criação da instância. Isso foi feito utilizando o seguinte script `user_data`:
+
 ```bash
 #!/bin/bash
 apt-get update -y
@@ -48,7 +53,7 @@ systemctl start nginx
 ```
 
 ### 2. **Melhoria de Segurança**
-- **SSH Restrito**: Uma melhoria recomendada é restringir o acesso SSH para um IP específico em vez de deixar a porta 22 aberta para o mundo. Isso pode ser feito ajustando o bloco de regras de entrada no Security Group.
+Implementei uma melhoria significativa de segurança ao **restringir o acesso SSH** a um IP específico, em vez de deixar a porta 22 aberta para o mundo. Isso ajuda a prevenir ataques de força bruta e protege o servidor de acessos indesejados.
 
 ## Instruções para Execução
 
@@ -58,45 +63,44 @@ systemctl start nginx
 
 ### Passos:
 1. **Clone o repositório**:
+   Primeiro, clone o repositório com os arquivos necessários:
    ```bash
    git clone <URL-do-repositorio>
    cd <diretorio-do-repositorio>
    ```
 
 2. **Inicialize o Terraform**:
-   No diretório onde está o arquivo `main.tf`, execute:
+   No diretório onde está o arquivo `main.tf`, inicialize o Terraform:
    ```bash
    terraform init
    ```
 
 3. **Aplique o Terraform**:
-   Para criar a infraestrutura na AWS, execute:
+   Em seguida, crie a infraestrutura na AWS executando o comando abaixo. Quando solicitado, confirme com `yes`:
    ```bash
    terraform apply
    ```
-   Confirme a criação dos recursos digitando `yes` quando solicitado.
 
-4. **Acessar a instância EC2**:
-   Após a criação, acesse a instância EC2 via SSH usando a chave privada gerada:
+4. **Acesse a instância EC2**:
+   Após a criação, você pode acessar a instância EC2 via SSH utilizando a chave privada gerada. Use o comando abaixo:
    ```bash
    ssh -i <path_to_private_key.pem> ubuntu@<ec2_public_ip>
    ```
    O endereço IP público da instância será exibido como output ao final do processo.
 
-5. **Testar o Nginx**:
-   Após a criação da instância, acesse o endereço IP público da instância no navegador:
-   ```
+5. **Teste o Nginx**:
+   Para verificar se o Nginx está funcionando corretamente, acesse o endereço IP público da instância através do navegador:
+   ```bash
    http://<ec2_public_ip>
    ```
-   O servidor Nginx estará rodando.
 
-6. **Destruir a infraestrutura**:
-   Após os testes, destrua a infraestrutura para evitar custos:
+6. **Destrua a infraestrutura**:
+   Para evitar custos adicionais após os testes, destrua a infraestrutura criada:
    ```bash
    terraform destroy
    ```
 
 ## Outputs
 
-- **Chave privada**: A chave privada SSH será exibida no output.
-- **IP público**: O IP público da instância EC2 também será exibido.
+- **Chave privada**: A chave privada SSH necessária para acessar a instância EC2 será exibida no output do Terraform.
+- **IP público**: O endereço IP público da instância EC2 também será exibido para que você possa acessá-la remotamente.

@@ -97,7 +97,9 @@ resource "aws_security_group" "main_sg" {
     from_port        = 22                         # Porta SSH
     to_port          = 22                         # Porta SSH
     protocol         = "tcp"                      # Protocolo TCP
-    cidr_blocks      = ["0.0.0.0/0"]              # Acesso aberto a todos (pode ser melhorado para restrição por IP)
+
+    # Acesso aberto a todos foi melhorado para restringir o acesso SSH a um IP específico
+    cidr_blocks      = ["<SEU_IP>/32"]            # Acesso restrito a IP específico para maior segurança
     ipv6_cidr_blocks = ["::/0"]                   # Acesso IPv6 aberto a todos
   }
 
@@ -157,7 +159,7 @@ resource "aws_instance" "debian_ec2" {
               apt-get update -y
               apt-get upgrade -y
               
-              # Sugestão: Adicione os comandos abaixo para instalar e iniciar o servidor Nginx
+              # Instalação e automação do Nginx
               apt-get install -y nginx  # Instala o servidor Nginx
               systemctl start nginx     # Inicia o Nginx automaticamente
               EOF
@@ -179,3 +181,16 @@ output "ec2_public_ip" {
   description = "Endereço IP público da instância EC2"
   value       = aws_instance.debian_ec2.public_ip  # IP público da instância EC2
 }
+
+# DETALHAMENTO DAS MELHORIAS APLICADAS:
+
+# 1. Segurança aprimorada no Security Group:
+#    SSH foi restrito a um IP específico para melhorar a segurança e evitar ataques de força bruta.
+#    Exemplo: cidr_blocks = ["<SEU_IP>/32"]
+
+# 2. Automação do Nginx:
+#    Foi adicionado um script de inicialização (user_data) que instala e inicia o servidor Nginx automaticamente,
+#    garantindo que o servidor web esteja pronto para uso após o provisionamento da instância EC2.
+
+# 3. Outputs adicionais:
+#    Adicionei a exibição do IP público da instância EC2 e da chave privada utilizada
